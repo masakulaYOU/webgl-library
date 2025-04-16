@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>draw a triangle</title>
+</head>
+<body>
+    <canvas id="canvas" height="600" width="800"></canvas>
+</body>
+<script>
+    const vertexShaderSource = `
+        attribute vec3 a_Pos;
+        void main() {
+            gl_Position = vec4(a_Pos, 1.0);
+            gl_PointSize = 10.0;
+        }
+    `;
+
+    const fragmentShaderSource = `
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    `;
+</script>
+<script>
+    const canvas = document.getElementById("canvas");
+    const gl = canvas.getContext("webgl2");
+
+    // create vertex shader
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertexShaderSource);
+    gl.compileShader(vertexShader);
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        console.log("VERTEX_SHADER::COMPILE_ERROR: " + gl.getShaderInfoLog(vertexShader));
+        gl.deleteShader(vertexShader);
+    }
+
+    // create fragment shader
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragmentShaderSource);
+    gl.compileShader(fragmentShader);
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        console.log("VERTEX_SHADER::COMPILE_ERROR: " + gl.getShaderInfoLog(fragmentShader));
+        gl.deleteShader(fragmentShader);
+    }
+
+    // create program
+    const shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+
+    const positions = [
+        0.0, 0.5, 0.0,
+        -0.75, -0.25, 0.0,
+        0.75, -0.25, 0.0
+    ];
+
+    const count = 3;
+
+    const posBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+    const posLocation = gl.getAttribLocation(shaderProgram, 'a_Pos');
+    gl.vertexAttribPointer(posLocation, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(posLocation);
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(shaderProgram);
+    gl.drawArrays(gl.TRIANGLES, 0,3);
+
+</script>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+</body>
+<script>
+    const vertexShaderSource = `
+        void main() {
+            gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+            gl_PointSize = 10.0;
+        }
+    `;
+    const fragmentShaderSource = `
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    `;
+</script>
+<script>
+    const canvas = document.querySelector("#canvas");
+    const gl = canvas.getContext("webgl2");
+
+    // create vertex shader
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertexShaderSource);
+    gl.compileShader(vertexShader);
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        console.log("VERTEX_SHADER::COMPILE_ERROR: " + gl.getShaderInfoLog(vertexShader));
+        gl.deleteShader(vertexShader);
+    }
+
+    // create fragment shader
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragmentShaderSource);
+    gl.compileShader(fragmentShader);
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        console.log("VERTEX_SHADER::COMPILE_ERROR: " + gl.getShaderInfoLog(fragmentShader));
+        gl.deleteShader(fragmentShader);
+    }
+
+    // create program
+    const shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        console.log("PROGRAM::LINK_ERROR: " + gl.getProgramInfoLog(shaderProgram));
+    }
+    
+    gl.useProgram(shaderProgram);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.drawArrays(gl.POINTS, 0, 1);
+
+</script>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving, scaling and rotating triangles</title>
+</head>
+<body>
+    <canvas id="canvas" height="600" width="800"></canvas>
+</body>
+<script>
+    const vertexShaderSource = `
+        attribute vec4 a_Position;
+        uniform vec4 u_Translation;
+        void main() {
+            gl_Position = a_Position + u_Translation;
+        }
+    `;
+
+    const fragmentShaderSource = `
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    `;
+</script>
+<script>
+    const canvas = document.getElementById("canvas");
+    const gl = canvas.getContext("webgl2");
+
+    // create vertex shader
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertexShaderSource);
+    gl.compileShader(vertexShader);
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        console.log("VERTEX_SHADER::COMPILE_ERROR: " + gl.getShaderInfoLog(vertexShader));
+        gl.deleteShader(vertexShader);
+    }
+
+    // create fragment shader
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragmentShaderSource);
+    gl.compileShader(fragmentShader);
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        console.log("VERTEX_SHADER::COMPILE_ERROR: " + gl.getShaderInfoLog(fragmentShader));
+        gl.deleteShader(fragmentShader);
+    }
+
+    // create program
+    const shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        console.log("PROGRAM::LINK_ERROR: " + gl.getProgramInfoLog(shaderProgram));
+    }
+    gl.useProgram(shaderProgram);
+    // set positions of points
+   const positions = [
+        -0.5, 0.25, 0.0, 1.0,
+        -0.75, -0.25, 0.0, 1.0,
+        -0.25, -0.25, 0.0, 1.0
+    ];
+
+    const Tx = 0.5, Ty = 0.5, Tz = 0.0;
+
+    const count = 3;
+
+    // create buffer
+    const posBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+    const posLocation = gl.getAttribLocation(shaderProgram, 'a_Position');
+    gl.vertexAttribPointer(
+        posLocation, 4, gl.FLOAT,false, 0, 0);
+    gl.enableVertexAttribArray(posLocation);
+
+    const u_Translation = gl.getUniformLocation(shaderProgram, 'u_Translation');
+    gl.uniform4f(u_Translation, Tx, Ty, Tz, 0.0);
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
+    gl.clearDepth(1.0); // Clear everything
+    gl.enable(gl.DEPTH_TEST); // Enable depth testing
+    gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+
+    // Clear the canvas before we start drawing on it.
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    gl.drawArrays(gl.TRIANGLES, 0, count);
+</script>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+</body>
+<script>
+    function defined(obj) {
+        return !(obj === undefined || obj === null);
+    }
+
+    const contextNames = ["webgl2", "webgl", "experimental-webgl", "experimental-webgl2", "webgpu"];
+    const canvas = document.querySelector("#canvas");
+
+    let result = "";
+    for (let i = 0; i < contextNames.length; ++i) {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext(contextNames[i]);
+        result += `${contextNames[i]}: ${defined(context)}\n`;
+    }
+
+    const div = document.createElement("div");
+    div.innerText = result;
+    document.body.appendChild(div);
+</script>
+</html>
